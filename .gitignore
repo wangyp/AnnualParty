@@ -1,0 +1,77 @@
+#### Marlin Web git ingore file #####
+
+### WebStorm ###
+###==================###
+
+.idea/
+
+
+### Visual Studio ###
+###==================###
+
+# User-specific files
+*.suo
+*.user
+
+# Build results
+[Dd]ebug/
+[Bb]in/
+[Oo]bj/
+obj/
+*.cache
+
+
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.[Rr]e[Ss]harper.user
+
+# Nuget
+[Pp]ackages/
+*.dgml
+
+### Windows detritus ###
+###==================###
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+
+### Compass          ###
+###==================###
+
+.sass-cache/
+
+
+### Bower            ###
+###==================###
+
+
+
+### Node            ###
+###==================###
+
+node_modules/
+
+### Grunt            ###
+###==================###
+
+assets/
+[Dd]est/
+.[Dd]est/
+
+### Log              ###
+###==================###
+
+*.log
+
+tmp/
+.tmp/
+
