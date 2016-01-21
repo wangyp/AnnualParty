@@ -223,8 +223,8 @@ namespace CICC.WR.AnnualPartyControls
                 ShowCheckinFlag(sender as UserPhotoItem);
             }
         }
-        List<Employee> empList;
-        public void InitEmployeeInfo(List<Employee> emps)
+        List<MyEmployee> empList;
+        public void InitEmployeeInfo(List<MyEmployee> emps)
         {
             empList = emps;
         }
@@ -234,7 +234,7 @@ namespace CICC.WR.AnnualPartyControls
         {
             for (int i = 0; i < list.Count; i++)
             {
-                Employee emp = empList[list[i]];
+                MyEmployee emp = empList[list[i]];
                 pics[i].Key = emp.EmployeeNumber;
                 pics[i].Image = emp.Photo;
                 pics[i].Text = emp.Dept + " " + emp.Name;
@@ -251,14 +251,14 @@ namespace CICC.WR.AnnualPartyControls
         /// 显示员工照片
         /// </summary>
         /// <param name="list"></param>
-        public void ShowPhoto(List<Employee> list)
+        public void ShowPhoto(List<MyEmployee> list)
         {
             this.Controls.Clear();
             InitPictureBox(list.Count);
           
             for (int i = 0; i < list.Count; i++)
             {
-                Employee emp = list[i];
+                MyEmployee emp = list[i];
                 var item=pics[i];
                 item.Key = emp.EmployeeNumber;
                 item.Image = emp.Photo;

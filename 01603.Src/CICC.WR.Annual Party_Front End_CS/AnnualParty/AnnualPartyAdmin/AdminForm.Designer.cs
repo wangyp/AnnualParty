@@ -67,11 +67,14 @@
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.btnCheckinAll = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.tabPage4.SuspendLayout();
+            this.tabPage5.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -80,6 +83,7 @@
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Controls.Add(this.tabPage4);
+            this.tabControl1.Controls.Add(this.tabPage5);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
@@ -97,10 +101,10 @@
             this.tabPage1.Controls.Add(this.label3);
             this.tabPage1.Controls.Add(this.btnOpenFolder);
             this.tabPage1.Controls.Add(this.btnOpenFile);
-            this.tabPage1.Location = new System.Drawing.Point(4, 21);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(315, 292);
+            this.tabPage1.Size = new System.Drawing.Size(315, 291);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "员工&照片导入";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -190,10 +194,10 @@
             this.tabPage2.Controls.Add(this.label1);
             this.tabPage2.Controls.Add(this.btnClearAward);
             this.tabPage2.Controls.Add(this.btnClearCheckin);
-            this.tabPage2.Location = new System.Drawing.Point(4, 21);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(315, 292);
+            this.tabPage2.Size = new System.Drawing.Size(315, 291);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "结果清空";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -279,10 +283,10 @@
             this.tabPage3.Controls.Add(this.label6);
             this.tabPage3.Controls.Add(this.label5);
             this.tabPage3.Controls.Add(this.btnImportFromDB);
-            this.tabPage3.Location = new System.Drawing.Point(4, 21);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(315, 292);
+            this.tabPage3.Size = new System.Drawing.Size(315, 291);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "数据库导入";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -387,10 +391,10 @@
             this.tabPage4.Controls.Add(this.label10);
             this.tabPage4.Controls.Add(this.btnNotLottery);
             this.tabPage4.Controls.Add(this.rtbNotLotteryEmployeeNumbers);
-            this.tabPage4.Location = new System.Drawing.Point(4, 21);
+            this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(315, 292);
+            this.tabPage4.Size = new System.Drawing.Size(315, 291);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "不抽奖";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -427,6 +431,27 @@
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
+            // tabPage5
+            // 
+            this.tabPage5.Controls.Add(this.btnCheckinAll);
+            this.tabPage5.Location = new System.Drawing.Point(4, 22);
+            this.tabPage5.Name = "tabPage5";
+            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage5.Size = new System.Drawing.Size(315, 291);
+            this.tabPage5.TabIndex = 4;
+            this.tabPage5.Text = "全抽奖";
+            this.tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // btnCheckinAll
+            // 
+            this.btnCheckinAll.Location = new System.Drawing.Point(37, 42);
+            this.btnCheckinAll.Name = "btnCheckinAll";
+            this.btnCheckinAll.Size = new System.Drawing.Size(231, 105);
+            this.btnCheckinAll.TabIndex = 0;
+            this.btnCheckinAll.Text = "不需要签到，都参加抽奖";
+            this.btnCheckinAll.UseVisualStyleBackColor = true;
+            this.btnCheckinAll.Click += new System.EventHandler(this.btnCheckinAll_Click);
+            // 
             // AdminForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -447,6 +472,7 @@
             this.tabPage3.PerformLayout();
             this.tabPage4.ResumeLayout(false);
             this.tabPage4.PerformLayout();
+            this.tabPage5.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -490,6 +516,8 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Button btnNotLottery;
         private System.Windows.Forms.RichTextBox rtbNotLotteryEmployeeNumbers;
+        private System.Windows.Forms.TabPage tabPage5;
+        private System.Windows.Forms.Button btnCheckinAll;
     }
 }
 

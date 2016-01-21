@@ -8,9 +8,9 @@ namespace CICC.WR.AnnualParty
 {
    public static class GlobalData
     {
-        private static Dictionary<string, Employee> employees=new Dictionary<string,Employee>();
+        private static Dictionary<string, MyEmployee> employees=new Dictionary<string,MyEmployee>();
 
-        public static Dictionary<string, Employee> Employees
+        public static Dictionary<string, MyEmployee> Employees
         {
             get { return employees; }
             set { employees = value; }
@@ -22,9 +22,9 @@ namespace CICC.WR.AnnualParty
             set { photos = value; }
         }
 
-        private static List<Employee> employeeList = new List<Employee>();
+        private static List<MyEmployee> employeeList = new List<MyEmployee>();
 
-        public static List<Employee> EmployeeList
+        public static List<MyEmployee> EmployeeList
         {
             get { return employeeList; }
             set { employeeList = value; }

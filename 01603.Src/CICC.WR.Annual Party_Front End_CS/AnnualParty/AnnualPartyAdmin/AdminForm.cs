@@ -83,7 +83,7 @@ namespace AnnualPartyAdmin
             foreach (string empstr in empList)
             {
                 string[] empinfo = empstr.Split(',');
-                Employee emp = new Employee() {EmployeeNumber = empinfo[0], Name = empinfo[1], Dept = empinfo[2]};
+                MyEmployee emp = new MyEmployee() {EmployeeNumber = empinfo[0], Name = empinfo[1], Dept = empinfo[2]};
                 string shortpy = "";
                 emp.Pinyin = GetPinyin(emp.Name, out shortpy);
                 emp.ShortPinyin = shortpy;
@@ -165,10 +165,10 @@ namespace AnnualPartyAdmin
             Pinyin py = new Pinyin();
             try
             {
-                List<Employee> empList = AnnualPartySqlHelper.Instance.GetAllEmployeeFromHrDB(conn, rtbSQL.Text);
+                List<MyEmployee> empList = AnnualPartySqlHelper.Instance.GetAllEmployeeFromHrDB(conn, rtbSQL.Text);
                 MessageBox.Show("从HR系统读取了" + empList.Count + "个用户，点击确定开始导入");
                 AnnualPartySqlHelper.Instance.DeleteTableData();
-                foreach (Employee emp in empList)
+                foreach (MyEmployee emp in empList)
                 {
                     try
                     {
@@ -208,6 +208,10 @@ namespace AnnualPartyAdmin
             MessageBox.Show("处理完成");
         }
 
-
+        private void btnCheckinAll_Click(object sender, EventArgs e)
+        {
+            AnnualPartySqlHelper.Instance.CheckInAll();
+            MessageBox.Show("处理完成");
+        }
     }
 }
