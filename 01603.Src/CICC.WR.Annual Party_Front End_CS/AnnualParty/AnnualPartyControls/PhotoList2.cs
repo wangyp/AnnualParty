@@ -181,8 +181,8 @@ namespace CICC.WR.AnnualPartyControls
         }
 
 
-        List<Employee> empList;
-        public void InitEmployeeInfo(List<Employee> emps)
+        List<MyEmployee> empList;
+        public void InitEmployeeInfo(List<MyEmployee> emps)
         {
             empList = emps;
             //imageList1.Images.Clear();
@@ -197,7 +197,7 @@ namespace CICC.WR.AnnualPartyControls
         {
             for (int i = 0; i < list.Count; i++)
             {
-                Employee emp = empList[list[i]];
+                MyEmployee emp = empList[list[i]];
                 pics[i].Key = emp.EmployeeNumber;
                 pics[i].Image = emp.Photo;
                 //pics[i].Image = imageList1.Images[emp.EmployeeNumber];

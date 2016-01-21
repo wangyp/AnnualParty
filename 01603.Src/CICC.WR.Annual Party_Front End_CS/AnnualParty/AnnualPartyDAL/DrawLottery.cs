@@ -9,7 +9,7 @@ namespace CICC.WR.AnnualPartyControls
     {
        public DrawLottery(int award )
        {
-           Winners = new List<Employee>();
+           Winners = new List<MyEmployee>();
            this.Award = award;
        }
 
@@ -50,7 +50,7 @@ namespace CICC.WR.AnnualPartyControls
        /// <summary>
        /// 中奖者名单
        /// </summary>
-       public List<Employee> Winners { get; set; }
+       public List<MyEmployee> Winners { get; set; }
 
        /// <summary>
        /// 抽完该奖后接下来抽的奖

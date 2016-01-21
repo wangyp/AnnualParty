@@ -7,14 +7,16 @@ using System.Configuration;
 using Microsoft.ApplicationBlocks.Data;
 using System.Drawing;
 using System.IO;
+using System.Linq;
+
 namespace CICC.WR.AnnualPartyDAL
 {
    public class AnnualPartySqlHelper
     {
-       private string conn="";
+       //private string conn="";
        private AnnualPartySqlHelper()
        {
-           conn = ConfigurationManager.ConnectionStrings["DBConnectionString"].ConnectionString;
+           //conn = ConfigurationManager.ConnectionStrings["DBConnectionString"].ConnectionString;
        }
        private static AnnualPartySqlHelper instance = null;
        public static AnnualPartySqlHelper Instance
@@ -50,28 +52,39 @@ namespace CICC.WR.AnnualPartyDAL
 
        public Image GetEmployeePhoto(string employeeNumber)
        {
-           string sql = "select Photo from Photo where EmployeeNumber=@en";
-           var reader = SqlHelper.ExecuteReader(conn, System.Data.CommandType.Text, sql, new SqlParameter("@en",employeeNumber));
-           try
+            AnnualPartyEntities entities=new AnnualPartyEntities();
+           var photo = entities.Photo.SingleOrDefault(e => e.EmployeeNumber == employeeNumber);
+           if (photo != null)
            {
-               if (reader.Read())
-               {
-                   if (!Convert.IsDBNull(reader["Photo"]))
-                   {
-                       byte[] bImg = (byte[])reader["Photo"];
-                       return AnnualPartySqlHelper.GetImage(bImg);
-                   }
-                   else
-                   {
-                       return GetNoPhotoImage();
-                   }
-               }
-               return GetNoPhotoImage();
+               byte[] bImg = photo.PhotoData;
+                return AnnualPartySqlHelper.GetImage(bImg);
            }
-           finally
-           {
-               reader.Close();
-           }
+            else
+            {
+                return GetNoPhotoImage();
+            }
+           // string sql = "select Photo from Photo where EmployeeNumber=@en";
+           //var reader = SqlHelper.ExecuteReader(conn, System.Data.CommandType.Text, sql, new SqlParameter("@en",employeeNumber));
+           //try
+           //{
+           //    if (reader.Read())
+           //    {
+           //        if (!Convert.IsDBNull(reader["Photo"]))
+           //        {
+           //            byte[] bImg = (byte[])reader["Photo"];
+           //            return AnnualPartySqlHelper.GetImage(bImg);
+           //        }
+           //        else
+           //        {
+           //            return GetNoPhotoImage();
+           //        }
+           //    }
+           //    return GetNoPhotoImage();
+           //}
+           //finally
+           //{
+           //    reader.Close();
+           //}
        }
 
        #region CheckIn Using
@@ -79,17 +92,20 @@ namespace CICC.WR.AnnualPartyDAL
        /// 获得所有的员工，不管是否签到的
        /// </summary>
        /// <returns></returns>
-       public Dictionary<string,Employee> GetAllEmployee(bool withPhoto)
+       public Dictionary<string,MyEmployee> GetAllEmployee(bool withPhoto)
        {
-           string sql = "select * from " + (withPhoto ? "vEmployeeFull" : "Employee");
-           var reader = SqlHelper.ExecuteReader(conn, System.Data.CommandType.Text, sql);
-           Dictionary<string, Employee> employees = new Dictionary<string, Employee>();
-           while (reader.Read())
+           //string sql = "select * from " + (withPhoto ? "vEmployeeFull" : "Employee");
+           //var reader = SqlHelper.ExecuteReader(conn, System.Data.CommandType.Text, sql);
+           AnnualPartyEntities entities=new AnnualPartyEntities();
+           Dictionary<string, MyEmployee> employees = new Dictionary<string, MyEmployee>();
+           foreach (var reader in entities.Employee)
            {
-               Employee emp = new Employee();
+               
+               MyEmployee emp = new MyEmployee();
                if (withPhoto)
                {
-                   emp.LoadWithPhoto(reader);
+                var p=   entities.Photo.SingleOrDefault(e => e.EmployeeNumber == reader.EmployeeNumber);
+                   emp.LoadWithPhoto(p);
                }
                else
                {
@@ -97,18 +113,22 @@ namespace CICC.WR.AnnualPartyDAL
                }
                employees.Add(emp.EmployeeNumber, emp);
            }
-           reader.Close();
+     
            return employees;
        }
 
-       public List<Employee> SearchEmployee(string word)
+       public List<MyEmployee> SearchEmployee(string word)
        {
-           var reader = SqlHelper.ExecuteReader(conn, "SearchEmployee", word);
-           List<Employee> employees = new List<Employee>();
-           while (reader.Read())
+      AnnualPartyEntities entities=new AnnualPartyEntities();
+          var result= entities.Employee.Where(e=>e.Alias==word||e.PinyinShort==word||e.PinyinFull==word);
+           List<MyEmployee> employees = new List<MyEmployee>();
+           foreach (var employeeResult in result)
            {
-               employees.Add(new Employee(reader));
-           }
+               var e = new MyEmployee();
+                e.LoadBasic(employeeResult);
+                employees.Add(e);
+            }
+         
            return employees;
        }
 
@@ -118,41 +138,77 @@ namespace CICC.WR.AnnualPartyDAL
        /// <returns></returns>
        public int GetCheckInCount()
        {
-           string sql = "select count(1) from Employee where checkin=1";
-           return (int)SqlHelper.ExecuteScalar(conn, System.Data.CommandType.Text, sql) ;
+            AnnualPartyEntities entities=new AnnualPartyEntities();
+           return entities.Employee.Where(e => e.CheckIn).Count();
+       
        }
 
 
        public bool CheckIn(string employeeNumber)
        {
-           string sql = "update Employee set checkin=1,CheckinTime=GETDATE() where EmployeeNumber=@number";
-           return SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql, new SqlParameter("@number", employeeNumber)) > 0;
+            AnnualPartyEntities entities = new AnnualPartyEntities();
+           var emp = entities.Employee.SingleOrDefault(e => e.EmployeeNumber == employeeNumber);
+           emp.CheckIn = true;
+            emp.CheckinTime=DateTime.Now;
+           entities.SaveChanges();
+           return true;
+           // string sql = "update Employee set checkin=1,CheckinTime=GETDATE() where EmployeeNumber=@number";
+           //return SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql, new SqlParameter("@number", employeeNumber)) > 0;
        }
-       /// <summary>
-       /// 取消签到
-       /// </summary>
-       /// <param name="employeeNumber"></param>
-       /// <returns></returns>
-       public bool CheckOut(string employeeNumber)
+        public bool CheckInAll()
+        {
+            AnnualPartyEntities entities = new AnnualPartyEntities();
+            foreach (var emp in entities.Employee)
+            {
+       
+            emp.CheckIn = true;
+            emp.CheckinTime = DateTime.Now;
+            }
+            entities.SaveChanges();
+            return true;
+            // string sql = "update Employee set checkin=1,CheckinTime=GETDATE() where EmployeeNumber=@number";
+            //return SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql, new SqlParameter("@number", employeeNumber)) > 0;
+        }
+        /// <summary>
+        /// 取消签到
+        /// </summary>
+        /// <param name="employeeNumber"></param>
+        /// <returns></returns>
+        public bool CheckOut(string employeeNumber)
        {
-           string sql = "update Employee set checkin=0 where EmployeeNumber=@number";
-           return SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql, new SqlParameter("@number", employeeNumber)) > 0;
+            AnnualPartyEntities entities = new AnnualPartyEntities();
+            var emp = entities.Employee.SingleOrDefault(e => e.EmployeeNumber == employeeNumber);
+            emp.CheckIn = false;
+            emp.CheckinTime = null;
+            entities.SaveChanges();
+            return true;
+           // string sql = "update Employee set checkin=0 where EmployeeNumber=@number";
+           //return SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql, new SqlParameter("@number", employeeNumber)) > 0;
        }
        /// <summary>
        /// 清空签到结果
        /// </summary>
        /// <returns></returns>
        public bool ClearCheckIn()
-       {
-           string sql = "update Employee set checkin=0,CheckinTime=null";
-           return SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql) > 0;
-       }
+        {
+            AnnualPartyEntities entities = new AnnualPartyEntities();
 
-       public bool UpdateShortPinyin(string number, string shortPy)
-       {
-           string sql = "update Employee set PinyinShort=@short where EmployeeNumber=@number";
-           return SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql,new SqlParameter("@short",shortPy), new SqlParameter("@number", number)) > 0;
-       }
+           foreach (var employee in entities.Employee)
+           {
+               employee.CheckIn = false;
+               employee.CheckinTime = null;
+           }
+           entities.SaveChanges();
+           return true;
+            //string sql = "update Employee set checkin=0,CheckinTime=null";
+            //return SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql) > 0;
+        }
+
+       // public bool UpdateShortPinyin(string number, string shortPy)
+       //{
+       //    string sql = "update Employee set PinyinShort=@short where EmployeeNumber=@number";
+       //    return SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql,new SqlParameter("@short",shortPy), new SqlParameter("@number", number)) > 0;
+       //}
 
        #endregion
 
@@ -161,25 +217,26 @@ namespace CICC.WR.AnnualPartyDAL
        /// 获得所有签到的员工，用于抽奖
        /// </summary>
        /// <returns></returns>
-       public Dictionary<string, Employee> GetAllCheckInEmployee(bool withPhoto)
+       public Dictionary<string, MyEmployee> GetAllCheckInEmployee(bool withPhoto)
        {
-           string sql = "select * from " + (withPhoto ? "vEmployeeFull" : "Employee")+" where CheckIn=1 and Award=-1";
-           var reader = SqlHelper.ExecuteReader(conn, System.Data.CommandType.Text, sql);
-           Dictionary<string, Employee> employees = new Dictionary<string, Employee>();
-           while (reader.Read())
+           //string sql = "select * from " + (withPhoto ? "vEmployeeFull" : "Employee")+" where CheckIn=1 and Award=-1";
+           //var reader = SqlHelper.ExecuteReader(conn, System.Data.CommandType.Text, sql);
+           Dictionary<string, MyEmployee> employees = new Dictionary<string, MyEmployee>();
+            AnnualPartyEntities entities = new AnnualPartyEntities();
+           foreach (var reader in entities.Employee)
            {
-               Employee emp = new Employee();
-               if (withPhoto)
-               {
-                   emp.LoadWithPhoto(reader);
+              
+               MyEmployee emp = new MyEmployee();
+                emp.LoadBasic(reader);
+                if (withPhoto)
+                {
+                    var pho = entities.Photo.SingleOrDefault(e => e.EmployeeNumber == reader.EmployeeNumber);
+                   emp.LoadWithPhoto(pho);
                }
-               else
-               {
-                   emp.LoadBasic(reader);
-               }
+              
                employees.Add(emp.EmployeeNumber, emp);
            }
-           reader.Close();
+         
            return employees;
        }
 
@@ -189,23 +246,41 @@ namespace CICC.WR.AnnualPartyDAL
        /// <param name="number"></param>
        /// <param name="award"></param>
        /// <returns></returns>
-       public bool UpdateAward(string number, int award,string awardName)
+       public bool UpdateAward(string number, int award, string awardName)
        {
-           string sql = "update Employee set Award=@award,AwardTime=getdate(),AwardName=@aindex where EmployeeNumber=@number";
-           return SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql, 
-               new SqlParameter("@award", award), 
-               new SqlParameter("@number", number),
-               new SqlParameter("@aindex", awardName)) > 0;
+           AnnualPartyEntities entities = new AnnualPartyEntities();
+           var emp = entities.Employee.SingleOrDefault(e => e.EmployeeNumber == number);
+           emp.Award = award;
+           emp.AwardTime = DateTime.Now;
+
+           entities.SaveChanges();
+           return true;
+           // string sql = "update Employee set Award=@award,AwardTime=getdate(),AwardName=@aindex where EmployeeNumber=@number";
+           //return SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql, 
+           //    new SqlParameter("@award", award), 
+           //    new SqlParameter("@number", number),
+           //    new SqlParameter("@aindex", awardName)) > 0;
        }
+
        /// <summary>
        /// 清空中奖结果
        /// </summary>
        /// <returns></returns>
        public bool ClearAward()
        {
-           string sql = "update Employee set Award=-1,AwardTime=null,AwardName=''";
-           return SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql) > 0;
-       }
+            AnnualPartyEntities entities = new AnnualPartyEntities();
+
+            foreach (var employee in entities.Employee)
+            {
+                employee.Award = -1;
+                employee.AwardTime = null;
+               
+            }
+            entities.SaveChanges();
+            return true;
+            //string sql = "update Employee set Award=-1,AwardTime=null,AwardName=''";
+            //return SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql) > 0;
+        }
 
        /// <summary>
        /// 获得中奖的总人数
@@ -213,8 +288,11 @@ namespace CICC.WR.AnnualPartyDAL
        /// <returns></returns>
        public int GetAwardUserCount()
        {
-           string sql = "select count(1) from Employee where Award!=-1";
-           return (int)SqlHelper.ExecuteScalar(conn, System.Data.CommandType.Text, sql);
+            AnnualPartyEntities entities = new AnnualPartyEntities();
+          var count= entities.Employee.Where(e => e.Award != -1).Count();
+           return count;
+           // string sql = "select count(1) from Employee where Award!=-1";
+           //return (int)SqlHelper.ExecuteScalar(conn, System.Data.CommandType.Text, sql);
        }
 
        /// <summary>
@@ -223,9 +301,12 @@ namespace CICC.WR.AnnualPartyDAL
        /// <returns></returns>
        public int GetTotalUserCount()
        {
-           string sql = "select count(1) from Employee";
-           return (int)SqlHelper.ExecuteScalar(conn, System.Data.CommandType.Text, sql);
-       }
+            AnnualPartyEntities entities = new AnnualPartyEntities();
+            var count = entities.Employee.Count();
+            return count;
+            //string sql = "select count(1) from Employee";
+            //return (int)SqlHelper.ExecuteScalar(conn, System.Data.CommandType.Text, sql);
+        }
 
        /// <summary>
        /// 获得照片数
@@ -233,9 +314,12 @@ namespace CICC.WR.AnnualPartyDAL
        /// <returns></returns>
        public int GetTotalUserPhotoCount()
        {
-           string sql = "select count(1) from Photo";
-           return (int)SqlHelper.ExecuteScalar(conn, System.Data.CommandType.Text, sql);
-       }
+            AnnualPartyEntities entities = new AnnualPartyEntities();
+            var count = entities.Photo.Count();
+            return count;
+            //string sql = "select count(1) from Photo";
+            //return (int)SqlHelper.ExecuteScalar(conn, System.Data.CommandType.Text, sql);
+        }
 
        #endregion
 
@@ -272,10 +356,16 @@ namespace CICC.WR.AnnualPartyDAL
        /// </summary>
        public void DeleteTableData()
        {
-           string sql = "delete from Employee";
-           SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql);
-           sql = "delete from Photo";
-           SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql);
+            //string sql = "delete from Employee";
+            AnnualPartyEntities entities =new AnnualPartyEntities();
+           foreach (var employee in entities.Employee)
+           {
+               entities.Employee.Remove(employee);
+           }
+           
+           //SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql);
+           //sql = "delete from Photo";
+           //SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql);
        }
        /// <summary>
        /// 插入一个员工照片
@@ -284,10 +374,14 @@ namespace CICC.WR.AnnualPartyDAL
        /// <param name="img"></param>
        public void InitPhoto(string number, Image img)
        {
-           string sql = "insert into Photo values(@num,@img)";
-           SqlParameter p1 = new SqlParameter("@num", number);
-           SqlParameter p2 = new SqlParameter("@img", ImageToByte(img));
-           SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql,p1,p2);
+            AnnualPartyEntities entities = new AnnualPartyEntities();
+            Photo p=new Photo() {EmployeeNumber = number,PhotoData = ImageToByte(img) };
+           entities.Photo.Add(p);
+           entities.SaveChanges();
+           //string sql = "insert into Photo values(@num,@img)";
+           //SqlParameter p1 = new SqlParameter("@num", number);
+           //SqlParameter p2 = new SqlParameter("@img", ImageToByte(img));
+           //SqlHelper.ExecuteNonQuery(conn, System.Data.CommandType.Text, sql,p1,p2);
        }
        /// <summary>
        /// 获得照片数
@@ -295,8 +389,10 @@ namespace CICC.WR.AnnualPartyDAL
        /// <returns></returns>
        public int GetPhotoCount()
        {
-           string sql = "select count(1) from Photo";
-           return (int)SqlHelper.ExecuteScalar(conn, System.Data.CommandType.Text, sql);
+            AnnualPartyEntities entities = new AnnualPartyEntities();
+          return entities.Photo.Count();
+           // string sql = "select count(1) from Photo";
+           //return (int)SqlHelper.ExecuteScalar(conn, System.Data.CommandType.Text, sql);
        }
        private byte[] ImageToByte(Image picture)
        {
@@ -318,13 +414,13 @@ namespace CICC.WR.AnnualPartyDAL
        /// <param name="conn"></param>
        /// <param name="sql"></param>
        /// <returns></returns>
-       public List<Employee> GetAllEmployeeFromHrDB(string conn,string sql)
+       public List<MyEmployee> GetAllEmployeeFromHrDB(string conn,string sql)
        {
            SqlDataReader reader = SqlHelper.ExecuteReader(conn, CommandType.Text, sql);
-           List<Employee> empList = new List<Employee>();
+           List<MyEmployee> empList = new List<MyEmployee>();
            while (reader.Read())
            {
-               Employee e = new Employee();
+               MyEmployee e = new MyEmployee();
                e.EmployeeNumber = (string)reader["EmployeeID"];
                e.Name = (string) reader["ChineseName"];
                e.Dept = (string) reader["Department"];
@@ -359,17 +455,27 @@ namespace CICC.WR.AnnualPartyDAL
        /// 插入一个员工信息
        /// </summary>
        /// <param name="e"></param>
-       public void InitEmployee(Employee e)
+       public void InitEmployee(MyEmployee e)
        {
-           string sql =
-               "insert into Employee(EmployeeNumber,Name,Dept,Alias,PinyinFull,PinyinShort) values(@num,@name,@dept,@alias,@pinyin,@pinyinshort)";
-           SqlParameter p1 = new SqlParameter("@num", e.EmployeeNumber);
-           SqlParameter p2 = new SqlParameter("@name", e.Name);
-           SqlParameter p3 = new SqlParameter("@dept", e.Dept);
-           SqlParameter p4 = new SqlParameter("@alias", e.Alias);
-           SqlParameter p5 = new SqlParameter("@pinyin", e.Pinyin);
-           SqlParameter p6 = new SqlParameter("@pinyinshort", e.ShortPinyin);
-           SqlHelper.ExecuteNonQuery(conn, CommandType.Text, sql, p1, p2, p3, p4, p5, p6);
+            AnnualPartyEntities entities = new AnnualPartyEntities();
+            Employee employee=new Employee();
+           employee.EmployeeNumber = e.EmployeeNumber;
+           employee.Dept = e.Dept;
+           employee.Name = e.Name;
+           employee.PinyinFull = e.Pinyin;
+           employee.PinyinShort = e.ShortPinyin;
+           employee.Alias = e.Alias;
+           entities.Employee.Add(employee);
+           entities.SaveChanges();
+           // string sql =
+           //    "insert into Employee(EmployeeNumber,Name,Dept,Alias,PinyinFull,PinyinShort) values(@num,@name,@dept,@alias,@pinyin,@pinyinshort)";
+           //SqlParameter p1 = new SqlParameter("@num", e.EmployeeNumber);
+           //SqlParameter p2 = new SqlParameter("@name", e.Name);
+           //SqlParameter p3 = new SqlParameter("@dept", e.Dept);
+           //SqlParameter p4 = new SqlParameter("@alias", e.Alias);
+           //SqlParameter p5 = new SqlParameter("@pinyin", e.Pinyin);
+           //SqlParameter p6 = new SqlParameter("@pinyinshort", e.ShortPinyin);
+           //SqlHelper.ExecuteNonQuery(conn, CommandType.Text, sql, p1, p2, p3, p4, p5, p6);
        }
 
        #endregion

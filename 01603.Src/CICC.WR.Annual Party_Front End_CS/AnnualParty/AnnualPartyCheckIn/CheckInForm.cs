@@ -43,7 +43,7 @@ namespace CICC.WR.AnnualParty
             {
                 var enumbers = AnnualPartySqlHelper.Instance.SearchEmployee(input);
             
-                foreach (Employee emp in enumbers)
+                foreach (MyEmployee emp in enumbers)
                 {
                     emp.Photo = GlobalData.EmployeePhotos[emp.EmployeeNumber];
                 }
